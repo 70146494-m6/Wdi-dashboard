@@ -108,7 +108,7 @@ def chart_box(df):
     short_labels = [ind[:20] + "..." if len(ind) > 20 else ind for ind in indicators[:len(bp_data)]]
     fig, ax = _fig(9, 5)
     if bp_data:
-        bp = ax.boxplot(bp_data, labels=short_labels, patch_artist=True, medianprops=dict(color="#FF9800",))
+        bp = ax.boxplot(bp_data, labels=short_labels, patch_artist=True, medianprops=dict(color="#FF9800" ))
         for patch, color in zip(bp["boxes"], PALETTE):
             patch.set_facecolor(color)
             patch.set_alpha(0.8)
