@@ -7,9 +7,7 @@ import pandas as pd
 import numpy as np
 import os
 
-DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
-
-DATA_FILE = os.path.join(DATA_DIR, "245b6253-2c4c-4eac-a990-ddcef4769577_Data.csv")
+https://drive.google.com/drive/folders/1t7uY7owgIu3b0QHinlc7DRjYy39AWY7X?usp=share_link
 
 # Known regional/aggregate group keywords to exclude from country lists
 AGGREGATES = [
