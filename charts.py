@@ -107,3 +107,120 @@ def chart_scatter(df):
         d1 = df[df["Series Name"] == ind1].groupby("Country Name")["Value"].mean()
         d2 = df[df["Series Name"] == ind2].groupby("Country Name")["Value"].mean()
         merged = pd.concat([d1, d2], axis=1).dropna()
+        merged.columns = [ind1, ind2]
+        ax.scatter(merged.iloc[:, 0], merged.iloc[:, 1], color=ACC, alpha=0.7, s=50, edgecolors=BG)
+        ax.set_xlabel(ind1[:40], color=FG, fontsize=9)
+        ax.set_ylabel(ind2[:40], color=FG, fontsize=9)
+        ax.set_title("Scatter: Indicator vs Indicator", color=FG, fontsize=12, fontweight="bold")
+    else:
+        ax.scatter(df["Year"], df["Value"], color=ACC, alpha=0.5, s=20)
+        ax.set_xlabel("Year", color=FG)
+        ax.set_ylabel("Value", color=FG)
+        ax.set_title("Year vs Value (Scatter)", color=FG, fontsize=12, fontweight="bold")
+    _style(fig, ax)
+    fig.tight_layout()
+    return fig
+
+
+def chart_box(df):
+    indicators = df["Series Name"].unique().tolist()
+    bp_data = [df[df["Series Name"] == ind]["Value"].dropna().values for ind in indicators]
+    bp_data = [d for d in bp_data if len(d) > 1]
+    short_labels = [ind[:25] + "…" if len(ind) > 25 else ind for ind in indicators[:len(bp_data)]]
+    fig, ax = _fig(9, 5)
+    if bp_data:
+        bp = ax.boxplot(bp_data, labels=short_labels, patch_artist=True,
+                        medianprops=dict(color="#FF9800", linewidth=2),
+                        flierprops=dict(marker='o', markerfacecolor=ACC, markersize=3, alpha=0.5))
+        for patch, color in zip(bp["boxes"], PALETTE):
+            patch.set_facecolor(color)
+            patch.set_alpha(0.8)
+    ax.set_xlabel("Indicator", color=FG)
+    ax.set_ylabel("Value", color=FG)
+    ax.set_title("Value Distribution by Indicator (Box Plot)", color=FG, fontsize=12, fontweight="bold")
+    plt.xticks(rotation=15, ha="right", fontsize=8)
+    _style(fig, ax)
+    fig.tight_layout()
+    return fig
+
+
+def chart_heatmap(df, top_n=12):
+    top_countries = df.groupby("Country Name")["Value"].mean().nlargest(top_n).index
+    data = df[df["Country Name"].isin(top_countries)]
+    data = data[data["Year"] >= 2000]
+    pivot = data.groupby(["Country Name", "Year"])["Value"].mean().unstack(fill_value=np.nan)
+    fig, ax = _fig(11, 6)
+    sns.heatmap(pivot, ax=ax, cmap="YlOrRd", linewidths=0.3,
+                linecolor=BG, cbar_kws={"shrink": 0.8}, yticklabels=True)
+    ax.set_title(f"Heatmap: Top {top_n} Countries x Year (2000+)", color=FG, fontsize=12, fontweight="bold")
+    ax.set_xlabel("Year", color=FG)
+    ax.set_ylabel("Country", color=FG)
+    ax.tick_params(colors=FG, labelsize=8)
+    cbar = ax.collections[0].colorbar
+    cbar.ax.tick_params(colors=FG)
+    fig.patch.set_facecolor(BG)
+    ax.set_facecolor(BG)
+    fig.tight_layout()
+    return fig
+
+
+def chart_area(df, indicator=None, top_n=6):
+    data = df[df["Series Name"] == indicator] if indicator else df
+    ind_label = indicator if indicator else "All"
+    top_countries = data.groupby("Country Name")["Value"].mean().nlargest(top_n).index
+    area_data = (
+        data[data["Country Name"].isin(top_countries)]
+        .groupby(["Year", "Country Name"])["Value"].mean()
+        .unstack(fill_value=0)
+        .sort_index()
+    )
+    fig, ax = _fig(10, 5)
+    ax.stackplot(area_data.index, area_data.T.values,
+                 labels=area_data.columns,
+                 colors=PALETTE[:len(area_data.columns)], alpha=0.8)
+    ax.set_xlabel("Year", color=FG)
+    ax.set_ylabel("Value", color=FG)
+    ax.set_title(f"Cumulative Trends — {ind_label}", color=FG, fontsize=12, fontweight="bold")
+    ax.legend(fontsize=8, loc="upper left", framealpha=0.2, labelcolor=FG, facecolor=BG)
+    _style(fig, ax)
+    fig.tight_layout()
+    return fig
+
+
+def chart_countplot(df):
+    counts = df["Series Name"].value_counts()
+    short_labels = [lbl[:30] + "…" if len(lbl) > 30 else lbl for lbl in counts.index]
+    fig, ax = _fig(9, 5)
+    ax.bar(short_labels, counts.values, color=PALETTE[:len(counts)], edgecolor=BG, width=0.6)
+    ax.set_xlabel("Indicator", color=FG)
+    ax.set_ylabel("Record Count", color=FG)
+    ax.set_title("Records Count by Indicator", color=FG, fontsize=12, fontweight="bold")
+    plt.xticks(rotation=20, ha="right", fontsize=8)
+    _style(fig, ax)
+    fig.tight_layout()
+    return fig
+
+
+def chart_violin(df):
+    indicators = df["Series Name"].unique().tolist()
+    vdata = [df[df["Series Name"] == ind]["Value"].dropna().values for ind in indicators]
+    vdata = [d for d in vdata if len(d) > 1]
+    short_labels = [ind[:25] + "…" if len(ind) > 25 else ind for ind in indicators[:len(vdata)]]
+    fig, ax = _fig(9, 5)
+    if vdata:
+        parts = ax.violinplot(vdata, positions=range(len(vdata)), showmedians=True, showmeans=False)
+        for i, pc in enumerate(parts["bodies"]):
+            pc.set_facecolor(PALETTE[i % len(PALETTE)])
+            pc.set_alpha(0.8)
+        parts["cmedians"].set_color("#FF9800")
+        parts["cmaxes"].set_color(FG)
+        parts["cmins"].set_color(FG)
+        parts["cbars"].set_color(FG)
+        ax.set_xticks(range(len(short_labels)))
+        ax.set_xticklabels(short_labels, rotation=15, ha="right", fontsize=8)
+    ax.set_xlabel("Indicator", color=FG)
+    ax.set_ylabel("Value", color=FG)
+    ax.set_title("Value Density by Indicator (Violin Plot)", color=FG, fontsize=12, fontweight="bold")
+    _style(fig, ax)
+    fig.tight_layout()
+    return fig
