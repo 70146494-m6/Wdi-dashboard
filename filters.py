@@ -7,7 +7,6 @@ import pandas as pd
 import numpy as np
 import os
 
-https://drive.google.com/drive/folders/1t7uY7owgIu3b0QHinlc7DRjYy39AWY7X?usp=share_link
 
 # Known regional/aggregate group keywords to exclude from country lists
 AGGREGATES = [
