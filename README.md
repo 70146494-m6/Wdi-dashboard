@@ -1,11 +1,5 @@
 # 🌍 World Development Indicators Dashboard
-
-**Course:** Exploratory Data Analysis  
-**Instructor:** Ali Hassan Sherazi  
-**Data Source:** World Bank — DataBank WDI  
-
 ---
-
 ## 📁 Project Structure
 
 ```
